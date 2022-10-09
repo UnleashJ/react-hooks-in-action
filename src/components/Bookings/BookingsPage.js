@@ -1,7 +1,10 @@
+import WeekPicker from "./WeekPicker"
+
 export default function BookingsPage(){
   return (
-    <div>
-      BookingsPage
-    </div>
+    <main className="bookings-page">
+      <p>BookingsPage</p>
+      <WeekPicker date={new Date()}/>
+    </main>
   )
 }
