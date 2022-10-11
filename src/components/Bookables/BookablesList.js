@@ -1,23 +1,46 @@
-import { useReducer, Fragment } from 'react';
+import { useReducer, Fragment, useEffect } from 'react';
 import data from '../../static.json'
 import { FaArrowRight } from 'react-icons/fa'
+import Spinner from '../UI/Spinner'
 import reducer from './reducer';
+import getData from '../../utils/api';
 
 const initialState = {
   group: "Rooms",
   bookableIndex: 0,
   hasDetails: false,
-  bookables: data.bookables
+  bookables: [],
+  isLoading: true,
+  error: false
 }
 
 export default function BookablesList() {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const { group, bookableIndex, hasDetails, bookables } = state
+  const { group, bookableIndex, hasDetails, bookables, isLoading, error } = state
 
   const {days, sessions} = data
   const bookablesInGroup = bookables.filter(bookable => bookable.group === group)
   const groups = [...new Set(bookables.map(bookable => bookable.group))]
   const bookable = bookablesInGroup[bookableIndex] // 选中的可预订项
+
+  useEffect(() => {
+    async function getBookables() {
+      try {
+        let data = await getData('http://localhost:3001/bookables')
+        dispatch({
+          type: "FETCH_BOOKABLES_SUCCESS",
+          payload: data
+        })
+      } catch (error) {
+        dispatch({
+          type:"FETCH_BOOKABLES_ERROR",
+          payload: error
+        })
+      }
+    }
+    dispatch({type: "FETCH_BOOKABLES_REQUEST"}) // 开始发送请求
+    getBookables()
+  }, [])
 
   const nextBookable = () => {
     dispatch({
@@ -41,6 +64,10 @@ export default function BookablesList() {
       type: "TOGGLE_HAS_DETAILS",
     })
   }
+
+  if(error) return <p>{error.message}</p>
+
+  if(isLoading) return <p><Spinner/> Loading bookables... </p>
 
   return (
     <Fragment>

@@ -1,16 +1,26 @@
-import { useState } from 'react'
-import data from '../../static.json'
+import { useEffect, useState } from 'react'
+import Spinner from '../UI/Spinner'
 
 export default function UserPicker() {
-  const {users} = data
-  const [selectUser, setSelectUser] = useState(1)
+  const [users, setUsers] = useState(null);
+
+  useEffect(() => {
+    async function getUser() {
+      let res = await fetch('http://localhost:3001/users/')
+      let data = await res.json()
+      setUsers(data)
+    }
+    getUser()
+  }, [])
+
+  if(users === null) return <Spinner/>
   return (
-    <select value={selectUser} onChange={e => setSelectUser(e.target.value)}>
-      {users.map(user => (
-        <option key={user.id} value={user.id}>
-          {user.name}
-        </option>
-      ))}
-    </select>
+   <select >
+    {
+      users.map(u => 
+        <option key={u.id}>{u.name}</option>
+      )
+    }
+   </select>
   )
 }

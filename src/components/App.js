@@ -11,6 +11,7 @@ import BookablesPage from './Bookables/BookablesPage'
 import UsersPage from './Users/UsersPage'
 import UserPicker from './Users/UserPicker'
 import { FaCalendarAlt, FaDoorOpen, FaUsers} from 'react-icons/fa'
+// import Test from './Test'
 
 export default function App() {
   return (
@@ -48,5 +49,6 @@ export default function App() {
         </Routes>
       </div>
   </Router>
+  // <Test/>
   )
 }

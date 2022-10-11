@@ -1,11 +1,22 @@
-import {useState, Fragment} from 'react';
-import data from "../../static.json";
+import {useState, Fragment, useEffect} from 'react';
+import Spinner from '../UI/Spinner'
 
 export default function UsersList () {
+  const [users, setUsers] = useState(null)
+ 
   const [userIndex, setUserIndex] = useState(0);
-  const {users} = data
-  const user = users[userIndex];
+  const user = users && users[userIndex]; // 选中的user
 
+  useEffect(() => {
+    async function getUser() {
+      let res = await fetch('http://localhost:3001/users/')
+      let data = await res.json()
+      setUsers(data)
+    }
+    getUser()
+  }, [])
+
+  if(users === null) return <Spinner/>
   return (
     <Fragment>
       <ul className="users items-list-nav">
