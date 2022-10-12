@@ -1,92 +1,57 @@
-import { useReducer, Fragment, useEffect, useRef } from 'react';
-import data from '../../static.json'
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { FaArrowRight } from 'react-icons/fa'
 import Spinner from '../UI/Spinner'
-import reducer from './reducer';
 import getData from '../../utils/api';
 
-const initialState = {
-  group: "Rooms",
-  bookableIndex: 0,
-  hasDetails: false,
-  bookables: [],
-  isLoading: true,
-  error: false
-}
 
-export default function BookablesList() {
-  const [state, dispatch] = useReducer(reducer, initialState)
-  const { group, bookableIndex, hasDetails, bookables, isLoading, error } = state
 
-  const {days, sessions} = data
+export default function BookablesList({bookable, updateBookable: setBookable}) {
+  const [ bookables, setBookables] = useState([])
+  const [error, setError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true) // 初始值默认请求中
+
+  const group = bookable?.group;
+
   const bookablesInGroup = bookables.filter(bookable => bookable.group === group)
   const groups = [...new Set(bookables.map(bookable => bookable.group))]
-  const bookable = bookablesInGroup[bookableIndex] // 选中的可预订项
 
   // 每次组件渲染，都会返回同一个ref对象，因此ref.current的值不会变化
-  const timerRef = useRef(null)
   const nextRef = useRef(null)
 
   useEffect(() => {
     async function getBookables() {
       try {
-        let data = await getData('http://localhost:3001/bookables')
-        dispatch({
-          type: "FETCH_BOOKABLES_SUCCESS",
-          payload: data
-        })
+        let data = await getData('http://localhost:3001/bookables') // 请求所有的可预订项
+        setBookables(data)
+        setBookable(data[0])
       } catch (error) {
-        dispatch({
-          type:"FETCH_BOOKABLES_ERROR",
-          payload: error
-        })
+        setError(error)
+      } finally {
+        setIsLoading(false) 
       }
     }
-    dispatch({type: "FETCH_BOOKABLES_REQUEST"}) // 开始发送请求
+    // 开始发送请求
     getBookables()
-  }, [])
-
-  useEffect(() => {
-    
-  },[])
+  }, [setBookable]) 
+  // 若setBookable是useState的updater函数，那么它一直不会改变。这个effect只会执行一次
+  // 若setBookable是自定义的函数，在BookablesView重新渲染时候，setBookable会被重新定义成新函数，effect会再次执行，如此循环。
+  // 使用useCallback包装可以返回记忆化的函数，依赖项不改变，函数就一直是一个值。
 
   const nextBookable = () => {
-    dispatch({
-      type: "NEXT_BOOKABLE",
-    })
+    const index = bookablesInGroup.indexOf(bookable)
+    const nextIndex = (index + 1) % bookablesInGroup.length
+    const nextBookable = bookablesInGroup[nextIndex]
+    setBookable(nextBookable)
   }
   const changeGroup = (e) => {
-    dispatch({
-      type: "SET_GROUP",
-      payload: e.target.value
-    })
+    const bookablesInSelectedGroup = bookables.filter(
+      b => b.group === e.target.value
+    )
+    setBookable(bookablesInSelectedGroup[0])
   }
   const changeBookable = index => {
-    dispatch({
-      type: 'SET_BOOKABLE',
-      payload: index
-    })
+    setBookable(bookablesInGroup[index])
     nextRef.current.focus() // 聚焦在next按钮上
-  }
-  const toggleDetails = () => {
-    dispatch({
-      type: "TOGGLE_HAS_DETAILS",
-    })
-  }
-
-  // 停止演讲
-  const stopPresentation = () => {
-    clearInterval(timerRef.current)
-  }
-  const startPresentation = () => {
-    timerRef.current = setInterval(() => {
-      dispatch({
-        type: "NEXT_BOOKABLE",
-      })
-    }, 1000)
-
-    // 返回清除计时器的函数，这样在组件卸载时可以自动清除计时器
-    return stopPresentation;
   }
 
   if(error) return <p>{error.message}</p>
@@ -104,7 +69,7 @@ export default function BookablesList() {
             bookablesInGroup.map((b, i) => (
               <li 
                 key={b.id} 
-                className={i === bookableIndex ? 'selected': null}
+                className={b.id === bookable.id ? 'selected': null}
               >
                 <button 
                   className='btn'
@@ -128,52 +93,6 @@ export default function BookablesList() {
           </button>
         </div>
       </div>
-
-      {bookable && (
-        <div className='bookable-details'>
-          <div className="item">
-            <div className="item-header">
-              <h2>{bookable.title}</h2>
-              <span className="controls">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={hasDetails}
-                    onChange={toggleDetails} 
-                  />
-                  Show Deatils
-                </label>
-                <button 
-                  className='btn'
-                  onClick={stopPresentation}
-                >
-                  Stop
-                </button>
-                <button 
-                  className='btn'
-                  onClick={startPresentation}
-                >
-                  Start
-                </button>
-              </span>
-            </div>
-            <p>{bookable.notes}</p>
-            {hasDetails && (
-              <div className="item-details">
-                <h3>Availablility</h3>
-                <div className="bookable-availability">
-                  <ul>
-                    {bookable.days.sort().map(d => <li key={d}>{days[d]}</li>)}
-                  </ul>
-                  <ul>
-                    {bookable.sessions.sort().map(s => <li key={s}>{sessions[s]}</li>)}
-                  </ul>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </Fragment>
   )
 }
