@@ -37,3 +37,9 @@ useReducer hook接收三个参数时，第三个参数时生成初始状态的�
 ```js
 const [state, dispatch] = useReducer(reducer, initialArg, init);
 ```
+
+## [useEffect](https://zh-hans.reactjs.org/docs/hooks-reference.html#useeffect)
+
+## useRef
+
+useRef有两种常见的使用场景，一种是使用ref保存一些可变的状态，但是这些状态的变化不需要触发组件的重新渲染。另一种是保存DOM元素的引用。

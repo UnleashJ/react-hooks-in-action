@@ -1,4 +1,4 @@
-import { useReducer, Fragment, useEffect } from 'react';
+import { useReducer, Fragment, useEffect, useRef } from 'react';
 import data from '../../static.json'
 import { FaArrowRight } from 'react-icons/fa'
 import Spinner from '../UI/Spinner'
@@ -23,6 +23,10 @@ export default function BookablesList() {
   const groups = [...new Set(bookables.map(bookable => bookable.group))]
   const bookable = bookablesInGroup[bookableIndex] // 选中的可预订项
 
+  // 每次组件渲染，都会返回同一个ref对象，因此ref.current的值不会变化
+  const timerRef = useRef(null)
+  const nextRef = useRef(null)
+
   useEffect(() => {
     async function getBookables() {
       try {
@@ -42,6 +46,10 @@ export default function BookablesList() {
     getBookables()
   }, [])
 
+  useEffect(() => {
+    
+  },[])
+
   const nextBookable = () => {
     dispatch({
       type: "NEXT_BOOKABLE",
@@ -58,11 +66,27 @@ export default function BookablesList() {
       type: 'SET_BOOKABLE',
       payload: index
     })
+    nextRef.current.focus() // 聚焦在next按钮上
   }
   const toggleDetails = () => {
     dispatch({
       type: "TOGGLE_HAS_DETAILS",
     })
+  }
+
+  // 停止演讲
+  const stopPresentation = () => {
+    clearInterval(timerRef.current)
+  }
+  const startPresentation = () => {
+    timerRef.current = setInterval(() => {
+      dispatch({
+        type: "NEXT_BOOKABLE",
+      })
+    }, 1000)
+
+    // 返回清除计时器的函数，这样在组件卸载时可以自动清除计时器
+    return stopPresentation;
   }
 
   if(error) return <p>{error.message}</p>
@@ -97,6 +121,7 @@ export default function BookablesList() {
             className='btn'
             onClick={nextBookable}
             autoFocus
+            ref={nextRef}
           >
             <FaArrowRight/>
             <span>Next</span>
@@ -118,6 +143,18 @@ export default function BookablesList() {
                   />
                   Show Deatils
                 </label>
+                <button 
+                  className='btn'
+                  onClick={stopPresentation}
+                >
+                  Stop
+                </button>
+                <button 
+                  className='btn'
+                  onClick={startPresentation}
+                >
+                  Start
+                </button>
               </span>
             </div>
             <p>{bookable.notes}</p>
