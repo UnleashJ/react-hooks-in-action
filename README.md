@@ -43,3 +43,11 @@ const [state, dispatch] = useReducer(reducer, initialArg, init);
 ## useRef
 
 useRef有两种常见的使用场景，一种是使用ref保存一些可变的状态，但是这些状态的变化不需要触发组件的重新渲染。另一种是保存DOM元素的引用。
+
+## useCallback
+
+使用useCallback包装可以返回记忆化的**函数**，依赖项不改变，函数就一直是一个值。
+
+## useMemo
+
+返回一个记忆化的**值**。依赖项数组改变，会重新计算该值并返回。依赖项数组不变，useMemo可能会返回存储的值（有可能因为释放内存而需要重新计算）。

@@ -1,10 +1,13 @@
-import WeekPicker from "./WeekPicker"
+import BookablesList from "../Bookables/BookablesList"
+import Bookings from "./Bookings"
+import { useState } from "react"
 
 export default function BookingsPage(){
+  const [ bookable, setBookable] = useState(null)
   return (
     <main className="bookings-page">
-      {/* <p>BookingsPage</p> */}
-      <WeekPicker date={new Date()}/>
+      <BookablesList bookable={bookable} updateBookable={setBookable}/>
+      <Bookings bookable = {bookable}/>
     </main>
   )
 }
