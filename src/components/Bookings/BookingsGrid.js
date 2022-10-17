@@ -26,7 +26,6 @@ export default function BookingsGrid(props) {
         try {
           let res = await getBookings(bookable.id, week.start, week.end)
           if(doUpdate) {
-            console.log(res, transformBookings(res))
             setBookings(transformBookings(res))
           } else {
             console.log('doUpdate false')

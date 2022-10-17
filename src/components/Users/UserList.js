@@ -1,11 +1,13 @@
-import {useState, Fragment, useEffect} from 'react';
+import {useState, Fragment, useEffect, useContext} from 'react';
 import Spinner from '../UI/Spinner'
+import UserContext from './UserContext'
 
 export default function UsersList () {
   const [users, setUsers] = useState(null)
+  const {user: defaultUser} = useContext(UserContext) // 默认选择当前用户
  
-  const [userIndex, setUserIndex] = useState(0);
-  const user = users && users[userIndex]; // 选中的user
+  const [userIndex, setUserIndex] = useState();
+  const user = userIndex != null ? users[userIndex]: defaultUser; // 选中的user
 
   useEffect(() => {
     async function getUser() {
@@ -23,7 +25,7 @@ export default function UsersList () {
         {users.map((u, i) => (
           <li
             key={u.id}
-            className={i === userIndex ? "selected" : null}
+            className={user.id === u.id ? "selected" : null}
           >
             <button
               className="btn"
